@@ -1,16 +1,18 @@
-# ts init
+# TPC
 
-Minimalist TypeScript package initializer - like `npm init`, but for TS.
+TypeScript Project Creator, like `npm init`, but for TS.
 
 Install globally:
+
 ```sh
 npm i -g @lexmin0412/tpc
 ```
 
 From now, whenever you want to create a new TypeScript project, just run:
+
 ```sh
-npm init
-tpc
+npm init -y
+tpc init
 ```
 
 **What does it actually do?** Well, not a lot! It will:
