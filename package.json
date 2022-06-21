@@ -1,7 +1,7 @@
 {
-  "name": "@lexmin0412/ts-project-creator",
+  "name": "@lexmin0412/tpc",
   "version": "1.0.0",
-  "description": "a tool for init typescript project",
+  "description": "a typescript project creator",
   "main": "index.js",
   "files": [
     "index.js"
