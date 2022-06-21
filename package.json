@@ -1,6 +1,6 @@
 {
   "name": "@lexmin0412/tpc",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "a typescript project creator",
   "main": "index.js",
   "files": [
