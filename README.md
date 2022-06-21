@@ -4,13 +4,13 @@ Minimalist TypeScript package initializer - like `npm init`, but for TS.
 
 Install globally:
 ```sh
-npm i -g ts-init
+npm i -g @lexmin0412/tpc
 ```
 
 From now, whenever you want to create a new TypeScript project, just run:
 ```sh
 npm init
-ts-init
+tpc
 ```
 
 **What does it actually do?** Well, not a lot! It will:
@@ -42,3 +42,7 @@ In the same time, it tries not to force you to use something which is just an op
 ## License
 
 MIT
+
+## More
+
+This project was inspired by [michowski/ts-init](https://github.com/michowski/ts-init).
