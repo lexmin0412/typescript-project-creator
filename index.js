@@ -14,6 +14,28 @@ const tsConfig = {
   files: ['src/index.ts'],
 }
 
+const actionsYml = `name: publish node package
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  publish-npm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14
+          registry-url: https://registry.npmjs.org/
+      - run: npm i
+      - run: npm run build
+      - run: npm publish -access public
+        env:
+          NODE_AUTH_TOKEN: \${{secrets.npm_token}}`
+
 const noop = _ => {}
 
 function main() {
@@ -82,6 +104,7 @@ function createFiles() {
 
   fs.writeFileSync('tsconfig.json', JSON.stringify(tsConfig, null, 2))
   fs.appendFileSync('.gitignore', 'lib\nes\nnode_modules')
+	fs.appendFileSync('.github/workflows/npmPublish.yml', actionsYml)
 
   console.log('✓ 3/3 Done!')
 }
