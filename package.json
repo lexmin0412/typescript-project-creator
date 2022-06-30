@@ -1,21 +1,26 @@
 {
   "name": "@lexmin0412/tpc",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "a typescript project creator",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "files": [
-    "index.js"
+    "es",
+    "lib"
   ],
   "bin": {
-		 "tpc": "index.js"
-	},
+    "tpc": "index.js"
+  },
   "scripts": {
     "lint": "eslint index.js",
-    "prepublishOnly": "npm run lint"
+    "prepublishOnly": "npm run build",
+    "build:commonjs": "rimraf lib && tsc --target es5 --outDir lib --module commonjs --declaration",
+    "build:es": "rimraf es && tsc --target es6 --outDir es --module es6",
+    "build": "npm run build:commonjs && npm run build:es",
+    "ts": "ts-node src/"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/goldenlynx/ts-init.git"
+    "url": "git+https://github.com/lexmin0412/typescript-project-creator.git"
   },
   "keywords": [
     "typescript",
@@ -28,17 +33,23 @@
     "project",
     "library"
   ],
-  "author": "Arkadiusz Michowski <arkadiusz@michowski.com> (https://github.com/michowski)",
+  "author": "lexmin0412 <zhangle_dev@outlook.com> (https://blog.cellerchan.top)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/goldenlynx/ts-init/issues"
   },
-  "homepage": "https://github.com/goldenlynx/ts-init#readme",
+  "homepage": "https://github.com/lexmin0412/typescript-project-creator#readme",
   "devDependencies": {
-    "eslint": "^4.8.0"
+    "eslint": "^4.8.0",
+    "rimraf": "^3.0.2",
+    "ts-node": "^10.8.1",
+    "typescript": "^4.7.4"
   },
-	"publishConfig": {
-		"access": "public",
-		"registry": "https://registry.npmjs.org/"
-	}
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "types": "./lib/index.d.ts",
+  "jsnext:main": "./es/index.js",
+  "module": "./es/index.js"
 }
