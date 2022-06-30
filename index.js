@@ -101,10 +101,14 @@ function createFiles() {
 
   if (!fs.existsSync('src')) fs.mkdirSync('src')
   if (!fs.existsSync('test')) fs.mkdirSync('test')
+	if ( !fs.existsSync('.github') ) {
+		fs.mkdirSync('.github')
+		fs.mkdirSync('.github/workflows')
+	}
 
   fs.writeFileSync('tsconfig.json', JSON.stringify(tsConfig, null, 2))
   fs.appendFileSync('.gitignore', 'lib\nes\nnode_modules')
-	fs.appendFileSync('.github/workflows/npmPublish.yml', actionsYml)
+	fs.writeFileSync('.github/workflows/npmPublish.yml', actionsYml)
 
   console.log('✓ 3/3 Done!')
 }
