@@ -12,6 +12,20 @@ const tsConfig = {
 	files: ['src/index.ts'],
 }
 
+const editorConfig =
+`root = true
+
+[*]
+indent_style = tab
+indent_size = 2
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.md]
+trim_trailing_whitespace = false
+`
+
 const actionsYml = `name: publish node package
 
 on:
@@ -107,6 +121,7 @@ function createFiles() {
 	fs.writeFileSync('tsconfig.json', JSON.stringify(tsConfig, null, 2))
 	fs.appendFileSync('.gitignore', 'lib\nes\nnode_modules')
 	fs.writeFileSync('.github/workflows/npmPublish.yml', actionsYml)
+	fs.writeFileSync('.editorConfig', editorConfig)
 
 	console.log('✓ 3/3 Done!')
 }
