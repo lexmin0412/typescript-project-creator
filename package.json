@@ -34,16 +34,17 @@
     "library"
   ],
   "author": {
-		"name": "lexmin0412",
-		"email": "zhangle_dev@outlook.com",
-		"url": "https://blog.cellerchan.top"
-	},
+    "name": "lexmin0412",
+    "email": "zhangle_dev@outlook.com",
+    "url": "https://blog.cellerchan.top"
+  },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/goldenlynx/ts-init/issues"
   },
   "homepage": "https://github.com/lexmin0412/typescript-project-creator#readme",
   "devDependencies": {
+    "@types/node": "^18.0.4",
     "eslint": "^4.8.0",
     "rimraf": "^3.0.2",
     "ts-node": "^10.8.1",
