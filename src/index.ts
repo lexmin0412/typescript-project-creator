@@ -58,7 +58,7 @@ function main() {
 	}
 
 	console.log('1. Installing typescript, ts-node, rimraf...')
-	exec('npm i -D typescript ts-node rimraf', (err: any, _, stderr: any) => {
+	exec('pnpm add -D typescript ts-node rimraf @types/node', (err: any, _, stderr: any) => {
 		if (stderr) {
 			console.error(stderr)
 		}
