@@ -33,7 +33,11 @@
     "project",
     "library"
   ],
-  "author": "lexmin0412 <zhangle_dev@outlook.com> (https://blog.cellerchan.top)",
+  "author": {
+		"name": "lexmin0412",
+		"email": "zhangle_dev@outlook.com",
+		"url": "https://blog.cellerchan.top"
+	},
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/goldenlynx/ts-init/issues"
