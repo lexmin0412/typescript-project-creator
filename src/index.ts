@@ -1,4 +1,4 @@
-import { exec } from 'child_process'
+import { execSync } from 'child_process'
 import * as fs from 'fs'
 import { editorConfig, actionsYml } from './files/index'
 import { program } from 'commander'
@@ -11,21 +11,15 @@ program
 .command('init')
 .description('create a new project')
 .action(()=>{
-	main()
+	try {
+		main()
+	} catch (error) {
+		console.error(error)
+		process.exit(1)
+	}
 })
 
 program.parse()
-
-const tsConfig = {
-	compilerOptions: {
-		moduleResolution: 'node',
-		lib: ['es6'],
-		alwaysStrict: true,
-		strictNullChecks: true,
-		noImplicitAny: true,
-	},
-	includes: ['src/*'],
-}
 
 const noop = (_: any) => { }
 
@@ -41,36 +35,26 @@ function main() {
 		process.exit()
 	}
 
+	printEmptyLine()
+
 	spinner.text = 'Installing typescript, ts-node, rimraf...'
-	// console.log('1. Installing typescript, ts-node, rimraf...')
-	exec('pnpm add -D typescript ts-node rimraf @types/node', (err: any, stdout, stderr: any) => {
 
-		printEmptyLine()
-		console.log('stdout', stdout)
-
-		if (stderr) {
-			console.error(stderr)
-		}
-
-		if (err) {
-			console.error(err)
-
-			process.exit()
-		}
-
-		spinner.succeed(spinner.text)
-
-		modifyPackage(spinner)
-		spinner.succeed(spinner.text)
-
-		createFiles(spinner)
-
-		spinner.succeed(spinner.text)
-		spinner.stop()
-		console.log('✓ 3/3 Done!')
-
-		info()
+	execSync('pnpm add -D typescript ts-node rimraf @types/node', {
+		stdio: 'inherit',
 	})
+
+	spinner.succeed(spinner.text)
+
+	modifyPackage(spinner)
+	spinner.succeed(spinner.text)
+
+	createFiles(spinner)
+
+	spinner.succeed(spinner.text)
+	spinner.stop()
+	console.log('✓ 3/3 Done!')
+
+	info()
 }
 
 function modifyPackage(spinner: Ora) {
@@ -109,6 +93,16 @@ function createFiles(spinner: Ora) {
 		fs.mkdirSync('.github/workflows')
 	}
 
+	const tsConfig = {
+		compilerOptions: {
+			moduleResolution: 'node',
+			lib: ['es6'],
+			alwaysStrict: true,
+			strictNullChecks: true,
+			noImplicitAny: true,
+		},
+		includes: ['src/*'],
+	}
 	fs.writeFileSync('tsconfig.json', JSON.stringify(tsConfig, null, 2))
 	fs.appendFileSync('.gitignore', 'lib\nes\nnode_modules')
 	fs.writeFileSync('.github/workflows/npmPublish.yml', actionsYml)
