@@ -11,15 +11,16 @@
 		"tpc": "index.js"
 	},
 	"scripts": {
-		"lint": "eslint index.js",
+		"lint": "lint-staged",
 		"prepublishOnly": "npm run build",
 		"build:commonjs": "rimraf lib && tsc --target es5 --outDir lib --module commonjs --declaration",
 		"build:es": "rimraf es && tsc --target es6 --outDir es --module es6",
 		"build": "npm run build:commonjs && npm run build:es",
 		"ts": "ts-node src/",
 		"docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
-    "docs:serve": "vitepress serve docs"
+		"docs:build": "vitepress build docs",
+		"docs:serve": "vitepress serve docs",
+		"prepare": "husky install"
 	},
 	"repository": {
 		"type": "git",
@@ -48,7 +49,9 @@
 	"homepage": "https://github.com/lexmin0412/typescript-project-creator#readme",
 	"devDependencies": {
 		"@types/node": "^18.0.4",
-		"eslint": "^4.8.0",
+		"eslint": "^4.19.1",
+		"husky": "^8.0.1",
+		"lint-staged": "^13.0.3",
 		"rimraf": "^3.0.2",
 		"ts-node": "^10.8.1",
 		"typescript": "^4.7.4"
@@ -72,5 +75,8 @@
 				"react-dom"
 			]
 		}
+	},
+	"lint-staged": {
+		"*.ts,*.js": "eslint"
 	}
 }
