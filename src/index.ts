@@ -1,5 +1,20 @@
 import { exec } from 'child_process'
 import * as fs from 'fs'
+import { editorConfig, actionsYml } from './files/index'
+import { program } from 'commander'
+const pkgJson = require('./../package.json')
+import ora, {Ora} from 'ora'
+import { printEmptyLine } from './utils/index'
+
+program
+.version(pkgJson.version)
+.command('init')
+.description('create a new project')
+.action(()=>{
+	main()
+})
+
+program.parse()
 
 const tsConfig = {
 	compilerOptions: {
@@ -9,56 +24,30 @@ const tsConfig = {
 		strictNullChecks: true,
 		noImplicitAny: true,
 	},
-	files: ['src/index.ts'],
+	includes: ['src/*'],
 }
-
-const editorConfig =
-`root = true
-
-[*]
-indent_style = tab
-indent_size = 2
-charset = utf-8
-trim_trailing_whitespace = true
-insert_final_newline = true
-
-[*.md]
-trim_trailing_whitespace = false
-`
-
-const actionsYml = `name: publish node package
-
-on:
-  push:
-    branches:
-      - master
-
-jobs:
-  publish-npm:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 14
-          registry-url: https://registry.npmjs.org/
-      - run: npm i
-      - run: npm run build
-      - run: npm publish -access public
-        env:
-          NODE_AUTH_TOKEN: \${{secrets.npm_token}}`
 
 const noop = (_: any) => { }
 
 function main() {
+
+	const message = 'init project'
+	const spinner = ora(message).start()
+
 	if (!fs.existsSync('package.json')) {
+		spinner.fail()
 		console.error('No package.json found - create a new one with: npm init.')
 
 		process.exit()
 	}
 
-	console.log('1. Installing typescript, ts-node, rimraf...')
-	exec('pnpm add -D typescript ts-node rimraf @types/node', (err: any, _, stderr: any) => {
+	spinner.text = 'Installing typescript, ts-node, rimraf...'
+	// console.log('1. Installing typescript, ts-node, rimraf...')
+	exec('pnpm add -D typescript ts-node rimraf @types/node', (err: any, stdout, stderr: any) => {
+
+		printEmptyLine()
+		console.log('stdout', stdout)
+
 		if (stderr) {
 			console.error(stderr)
 		}
@@ -69,18 +58,23 @@ function main() {
 			process.exit()
 		}
 
-		console.log('✓ 1/3 Done!')
+		spinner.succeed(spinner.text)
 
-		modifyPackage()
-		createFiles()
+		modifyPackage(spinner)
+		spinner.succeed(spinner.text)
+
+		createFiles(spinner)
+
+		spinner.succeed(spinner.text)
+		spinner.stop()
+		console.log('✓ 3/3 Done!')
 
 		info()
 	})
 }
 
-function modifyPackage() {
-	console.log('2. Adding stuff to package.json...')
-
+function modifyPackage(spinner: Ora) {
+	spinner.text = 'Adding stuff to package.json...'
 	const pkg = fs.readFileSync('package.json').toString()
 	const json = JSON.parse(pkg)
 
@@ -104,13 +98,10 @@ function modifyPackage() {
 	json.module = json['jsnext:main'] = './es/index.js'
 
 	fs.writeFileSync('package.json', JSON.stringify(json, null, 2))
-
-	console.log('✓ 2/3 Done!')
 }
 
-function createFiles() {
-	console.log('3. Creating files and directories...')
-
+function createFiles(spinner: Ora) {
+	spinner.text = 'Creating files and directories...'
 	if (!fs.existsSync('src')) fs.mkdirSync('src')
 	if (!fs.existsSync('test')) fs.mkdirSync('test')
 	if (!fs.existsSync('.github')) {
@@ -122,8 +113,6 @@ function createFiles() {
 	fs.appendFileSync('.gitignore', 'lib\nes\nnode_modules')
 	fs.writeFileSync('.github/workflows/npmPublish.yml', actionsYml)
 	fs.writeFileSync('.editorConfig', editorConfig)
-
-	console.log('✓ 3/3 Done!')
 }
 
 function info() {
@@ -141,5 +130,3 @@ function info() {
 	console.log('---')
 	console.log('Enjoy your coding! :)')
 }
-
-main()
