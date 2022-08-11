@@ -2,7 +2,7 @@
 
 TypeScript Project Creator, like `npm init`, but for TS.
 
-Install globally:
+Install tpc globally:
 
 ```sh
 npm i -g @lexmin0412/tpc
