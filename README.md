@@ -1,5 +1,10 @@
 # TPC
 
+![version](https://img.shields.io/npm/v/@lexmin0412/tpc) 
+![downloads-month](https://img.shields.io/npm/dm/@lexmin0412/tpc)
+
+English | [中文](./README.zh-CN.md)
+
 TypeScript Project Creator, like `npm init`, but for TS.
 
 Install tpc globally:
