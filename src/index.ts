@@ -80,6 +80,10 @@ function modifyPackage(spinner: Ora) {
 	json.main = './lib/index.js'
 	json.types = './lib/index.d.ts'
 	json.module = json['jsnext:main'] = './es/index.js'
+	json.publishConfig = {
+		access: 'public',
+		registry: 'https://registry.npmjs.org',
+	}
 
 	fs.writeFileSync('package.json', JSON.stringify(json, null, 2))
 }
