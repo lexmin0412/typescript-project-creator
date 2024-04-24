@@ -1,29 +1,10 @@
 import { execSync } from 'child_process'
 import * as fs from 'fs'
 import { editorConfig, actionsYml } from './files/index'
-import { program } from 'commander'
-const pkgJson = require('./../package.json')
 import ora, {Ora} from 'ora'
 import { printEmptyLine } from './utils/index'
 
-program
-.version(pkgJson.version)
-.command('init')
-.description('create a new project')
-.action(()=>{
-	try {
-		main()
-	} catch (error) {
-		console.error(error)
-		process.exit(1)
-	}
-})
-
-program.parse()
-
-const noop = (_: any) => { }
-
-function main() {
+export function init() {
 
 	const message = 'init project'
 	const spinner = ora(message).start()
