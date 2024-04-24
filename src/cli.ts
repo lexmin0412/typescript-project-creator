@@ -1,6 +1,6 @@
 import { program } from 'commander'
 const pkgJson = require('./../package.json')
-import { init } from './index'
+import { init } from './commands'
 
 program
 .version(pkgJson.version)
