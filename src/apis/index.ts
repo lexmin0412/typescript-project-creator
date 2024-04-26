@@ -6,9 +6,16 @@ import ora, {Ora} from 'ora'
 import { printEmptyLine } from './../utils/index'
 import { PackageJson } from 'pkg-types'
 
+interface FileItem {
+	path: string
+	content: string
+}
+
 interface IInitAPIOptions {
 	cwd: string
 	pkgJsonConfig?: PackageJson
+	fileList?: FileItem[]
+	dependencies?: Record<string, string>
 }
 
 export function init(options: IInitAPIOptions) {
@@ -21,7 +28,7 @@ export function init(options: IInitAPIOptions) {
 	const message = 'init project'
 	const spinner = ora(message).start()
 
-	if (!fs.existsSync('package.json')) {
+	if (!fs.existsSync(path.resolve(options.cwd, 'package.json'))) {
 		spinner.fail()
 		console.error('No package.json found - create a new one with: npm init.')
 
@@ -30,7 +37,14 @@ export function init(options: IInitAPIOptions) {
 
 	printEmptyLine()
 
-	spinner.text = 'Installing typescript, ts-node, rimraf...'
+	modifyPackage(spinner, options)
+	spinner.succeed(spinner.text)
+
+	createFiles(spinner, options)
+
+	spinner.succeed(spinner.text)
+
+	spinner.text = 'Installing custom dependencies and typescript, ts-node, rimraf...'
 
 	execSync('pnpm add -D typescript ts-node rimraf @types/node', {
 		stdio: 'inherit',
@@ -39,12 +53,6 @@ export function init(options: IInitAPIOptions) {
 
 	spinner.succeed(spinner.text)
 
-	modifyPackage(spinner, options)
-	spinner.succeed(spinner.text)
-
-	createFiles(spinner, options)
-
-	spinner.succeed(spinner.text)
 	spinner.stop()
 	console.log('✓ 3/3 Done!')
 
@@ -53,8 +61,8 @@ export function init(options: IInitAPIOptions) {
 
 function modifyPackage(spinner: Ora, options: IInitAPIOptions) {
 	spinner.text = 'Adding stuff to package.json...'
-	const pkg = fs.readFileSync('package.json').toString()
-	let json = JSON.parse(pkg)
+	const pkg = fs.readFileSync(path.resolve(options.cwd, 'package.json')).toString()
+	let json: PackageJson = JSON.parse(pkg)
 
 	if (!json.scripts) {
 		json.scripts = {}
@@ -76,7 +84,7 @@ function modifyPackage(spinner: Ora, options: IInitAPIOptions) {
 	json.module = json['jsnext:main'] = './es/index.js'
 	json = {
 		...json,
-		...options?.pkgJsonConfig  // 写入用户输入的配置
+		...options?.pkgJsonConfig,  // 写入用户输入的配置
 	}
 
 	const packageJsonPath = path.resolve(options.cwd, 'package.json')
@@ -96,9 +104,9 @@ function createFiles(spinner: Ora, options: IInitAPIOptions) {
 		}
 	})
 
-	if (!fs.existsSync('.github')) {
-		fs.mkdirSync('.github')
-		fs.mkdirSync('.github/workflows')
+	if (!fs.existsSync(resolvePath('.github'))) {
+		fs.mkdirSync(resolvePath('.github'))
+		fs.mkdirSync(resolvePath('.github/workflows'))
 	}
 
 	const tsConfig = {
@@ -115,6 +123,12 @@ function createFiles(spinner: Ora, options: IInitAPIOptions) {
 	fs.appendFileSync(resolvePath('.gitignore'), 'lib\nes\nnode_modules')
 	fs.writeFileSync(resolvePath('.github/workflows/npmPublish.yml'), actionsYml)
 	fs.writeFileSync(resolvePath('.editorConfig'), editorConfig)
+
+	// 自定义的文件列表
+	options.fileList?.forEach(file => {
+		const filePath = resolvePath(file.path)
+		fs.writeFileSync(filePath, file.content)
+ 	})
 }
 
 function info() {
