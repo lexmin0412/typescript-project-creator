@@ -3,7 +3,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { editorConfig, actionsYml } from './../files/index'
 import ora, {Ora} from 'ora'
-import { printEmptyLine } from './../utils/index'
+import { getCurrentGitConfig, printEmptyLine } from './../utils/index'
 import { PackageJson } from 'pkg-types'
 
 interface FileItem {
@@ -82,6 +82,17 @@ function modifyPackage(spinner: Ora, options: IInitAPIOptions) {
 	json.main = './lib/index.js'
 	json.types = './lib/index.d.ts'
 	json.module = json['jsnext:main'] = './es/index.js'
+
+	// 仓库相关信息 start
+	const { name, email } = getCurrentGitConfig()
+	// 作者信息
+	json.author = {
+		name,
+		email,
+		url: `https://github.com/${name}`,
+	}
+	// 仓库相关信息 end
+
 	json = {
 		...json,
 		...options?.pkgJsonConfig,  // 写入用户输入的配置
