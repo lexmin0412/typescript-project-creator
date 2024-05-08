@@ -1,6 +1,7 @@
 import inquirer from 'inquirer'
 import { PackageJson } from 'pkg-types'
-import { init as initAPI } from '../apis/index'
+import { IInitAPIOptions, init as initAPI } from '../apis/index'
+import { getCurrentGitConfig } from '../utils'
 
 /**
  * 初始化 API
@@ -36,8 +37,39 @@ export default async function init() {
 		}
 	}
 
+	const vcsConfig: IInitAPIOptions['vcs'] = {}
+	const {
+		vcsType
+	} = await inquirer.prompt([
+		{
+			type: 'list',
+			name: 'vcsType',
+			message: '请选择存储库类型',
+			choices: [
+				'github',
+				'gitlab',
+			],
+		}
+	])
+	vcsConfig.type = vcsType
+
+	if (vcsType === 'github') {
+		const {
+			githubUsername,
+		} = await inquirer.prompt([
+			{
+				type: 'input',
+				name: 'githubUsername',
+				message: 'Github 用户名',
+				default: getCurrentGitConfig().name
+			},
+		])
+		vcsConfig.githubUsername = githubUsername
+	}
+
 	initAPI({
 		cwd: process.cwd(),
-		pkgJsonConfig: config
+		pkgJsonConfig: config,
+		vcs: vcsConfig
 	})
 }
