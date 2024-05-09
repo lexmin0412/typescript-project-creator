@@ -54,22 +54,61 @@ export default async function init() {
 	vcsConfig.type = vcsType
 
 	if (vcsType === 'github') {
+		const currentGitConfig = getCurrentGitConfig()
 		const {
 			githubUsername,
+			githubUserEmail
 		} = await inquirer.prompt([
 			{
 				type: 'input',
 				name: 'githubUsername',
 				message: 'Github 用户名',
-				default: getCurrentGitConfig().name
+				default: currentGitConfig.name
+			},
+			{
+				type: 'input',
+				name: 'githubUserEmail',
+				message: 'Github 邮箱',
+				default: currentGitConfig.email
 			},
 		])
-		vcsConfig.githubUsername = githubUsername
+		vcsConfig.userConfig = {
+			name: githubUsername,
+			email: githubUserEmail,
+		}
+	}
+
+	const { pkgType } = await inquirer.prompt([
+		{
+			type: 'list',
+			name: 'pkgType',
+			message: '请选择包类型',
+			choices: [
+				'cli',
+				'lib',
+			]
+		}
+	])
+
+	if (pkgType === 'cli') {
+		const {
+			binName,
+		} = await inquirer.prompt([
+			{
+				type: 'input',
+				name: 'binName',
+				message: '请输入 bin 名称',
+			},
+		])
+		config.bin = {
+			[binName]: './lib/cli.js'
+		}
 	}
 
 	initAPI({
 		cwd: process.cwd(),
 		pkgJsonConfig: config,
-		vcs: vcsConfig
+		vcs: vcsConfig,
+		pkgType
 	})
 }
