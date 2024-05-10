@@ -11,11 +11,19 @@ interface FileItem {
 	content: string
 }
 
-interface IInitAPIOptions {
+export interface IInitAPIOptions {
 	cwd: string
 	pkgJsonConfig?: PackageJson
 	fileList?: FileItem[]
 	dependencies?: Record<string, string>
+	pkgType: 'cli' | 'lib'
+	vcs: {
+		type?: 'github' | 'gitlab'
+		userConfig?: {
+			name: string
+			email: string
+		}
+	}
 }
 
 export function init(options: IInitAPIOptions) {
@@ -28,11 +36,16 @@ export function init(options: IInitAPIOptions) {
 	const message = 'init project'
 	const spinner = ora(message).start()
 
-	if (!fs.existsSync(path.resolve(options.cwd, 'package.json'))) {
-		spinner.fail()
-		console.error('No package.json found - create a new one with: npm init.')
+	const pkgJsonPath = path.resolve(options.cwd, 'package.json')
 
-		process.exit()
+	if (!fs.existsSync(pkgJsonPath)) {
+		spinner.text = 'No package.json found, creating...'
+
+		// 如果没有 package.json 文件，则创建
+		fs.writeFileSync(pkgJsonPath, JSON.stringify({
+			name: options.cwd.slice(options.cwd.lastIndexOf(path.sep) + 1),
+		}))
+		spinner.succeed(spinner.text)
 	}
 
 	printEmptyLine()
@@ -89,7 +102,22 @@ function modifyPackage(spinner: Ora, options: IInitAPIOptions) {
 	json.author = {
 		name,
 		email,
-		url: `https://github.com/${name}`,
+	}
+	if (options.vcs?.type === 'github') {
+		const githubUserName = options.vcs.userConfig?.name || name
+		const githubUserEmail = options.vcs.userConfig?.email || email
+		// 填充 github 相关信息
+		json.author.name = githubUserName
+		json.author.email = githubUserEmail
+		json.author.url = `https://github.com/${githubUserName}`
+		json.repository = {
+			type: 'git',
+			url: `https://github.com/${githubUserName}/${json.name}.git`,
+		}
+		json.bugs = {
+			url: `https://github.com/${githubUserName}/${json.name}/issues`,
+		}
+		json.homepage = `https://github.com/${githubUserName}/${json.name}#readme`
 	}
 	// 仓库相关信息 end
 
@@ -115,6 +143,11 @@ function createFiles(spinner: Ora, options: IInitAPIOptions) {
 		}
 	})
 
+	// 如果是命令行工具，创建 src/cli.ts
+	if (options.pkgType === 'cli') {
+		fs.writeFileSync(resolvePath('src/cli.ts'), '')
+	}
+
 	if (!fs.existsSync(resolvePath('.github'))) {
 		fs.mkdirSync(resolvePath('.github'))
 		fs.mkdirSync(resolvePath('.github/workflows'))
@@ -127,6 +160,7 @@ function createFiles(spinner: Ora, options: IInitAPIOptions) {
 			alwaysStrict: true,
 			strictNullChecks: true,
 			noImplicitAny: true,
+			skipLibCheck: true,  // 跳过 3rd party 库的类型检查
 		},
 		includes: ['src/*'],
 	}
