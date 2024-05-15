@@ -63,6 +63,12 @@ export function init(options: IInitAPIOptions) {
 		stdio: 'inherit',
 		cwd: options.cwd,
 	})
+	if (options.pkgType === 'cli') {
+		execSync('pnpm add inquirer@8.x', {
+			stdio: 'inherit',
+			cwd: options.cwd,
+		})
+	}
 
 	spinner.succeed(spinner.text)
 
