@@ -23,6 +23,11 @@ export interface IInitAPIOptions {
 			name: string
 			email: string
 		}
+		repoName?: string
+		/**
+		 * 如果在 monorepo 中初始化子包，需要提供此参数，指定子包所在目录
+		 */
+		dir?: string
 	}
 }
 
@@ -63,6 +68,12 @@ export function init(options: IInitAPIOptions) {
 		stdio: 'inherit',
 		cwd: options.cwd,
 	})
+	if (options.pkgType === 'cli') {
+		execSync('pnpm add inquirer@8.x', {
+			stdio: 'inherit',
+			cwd: options.cwd,
+		})
+	}
 
 	spinner.succeed(spinner.text)
 
@@ -106,18 +117,20 @@ function modifyPackage(spinner: Ora, options: IInitAPIOptions) {
 	if (options.vcs?.type === 'github') {
 		const githubUserName = options.vcs.userConfig?.name || name
 		const githubUserEmail = options.vcs.userConfig?.email || email
+		const githubRepoName = options.vcs?.repoName
 		// 填充 github 相关信息
 		json.author.name = githubUserName
 		json.author.email = githubUserEmail
 		json.author.url = `https://github.com/${githubUserName}`
 		json.repository = {
 			type: 'git',
-			url: `https://github.com/${githubUserName}/${json.name}.git`,
+			url: `https://github.com/${githubUserName}/${githubRepoName}.git`,
+			directory: options.vcs.dir || '',
 		}
 		json.bugs = {
-			url: `https://github.com/${githubUserName}/${json.name}/issues`,
+			url: `https://github.com/${githubUserName}/${githubRepoName}/issues`,
 		}
-		json.homepage = `https://github.com/${githubUserName}/${json.name}#readme`
+		json.homepage = `https://github.com/${githubUserName}/${githubRepoName}#readme`
 	}
 	// 仓库相关信息 end
 
@@ -148,9 +161,13 @@ function createFiles(spinner: Ora, options: IInitAPIOptions) {
 		fs.writeFileSync(resolvePath('src/cli.ts'), '')
 	}
 
-	if (!fs.existsSync(resolvePath('.github'))) {
-		fs.mkdirSync(resolvePath('.github'))
-		fs.mkdirSync(resolvePath('.github/workflows'))
+	if (options.vcs?.type === 'github') {
+		// 如果是 github 类型，则创建 .github/workflows 目录
+		if (!fs.existsSync(resolvePath('.github'))) {
+			fs.mkdirSync(resolvePath('.github'))
+			fs.mkdirSync(resolvePath('.github/workflows'))
+			fs.writeFileSync(resolvePath('.github/workflows/npmPublish.yml'), actionsYml)
+		}
 	}
 
 	const tsConfig = {
@@ -166,7 +183,6 @@ function createFiles(spinner: Ora, options: IInitAPIOptions) {
 	}
 	fs.writeFileSync(resolvePath('tsconfig.json'), JSON.stringify(tsConfig, null, 2))
 	fs.appendFileSync(resolvePath('.gitignore'), 'lib\nes\nnode_modules')
-	fs.writeFileSync(resolvePath('.github/workflows/npmPublish.yml'), actionsYml)
 	fs.writeFileSync(resolvePath('.editorConfig'), editorConfig)
 
 	// 自定义的文件列表
