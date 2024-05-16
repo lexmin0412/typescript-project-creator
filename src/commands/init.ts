@@ -1,3 +1,5 @@
+import * as fs from 'fs'
+import * as path from 'path'
 import inquirer from 'inquirer'
 import { PackageJson } from 'pkg-types'
 import { IInitAPIOptions, init as initAPI } from '../apis/index'
@@ -10,6 +12,10 @@ export default async function init() {
 
 	const config: PackageJson = {}
 
+	const paths = process.cwd().split(path.sep)
+	const pkgJsonPath = path.resolve(process.cwd(), '..', '..', 'package.json')
+	const isUnderMonorepo = paths[paths.length - 2] === 'packages' && fs.existsSync(pkgJsonPath)
+
 	const { isPublic } = await inquirer
 		.prompt([
 			{
@@ -21,7 +27,7 @@ export default async function init() {
 
 	config.private = !isPublic
 	if (isPublic) {
-		const { registry } = await inquirer.prompt([
+		const { registry, npmPkgName } = await inquirer.prompt([
 			{
 				type: 'list',
 				name: 'registry',
@@ -30,7 +36,15 @@ export default async function init() {
 					'https://registry.npmjs.org/',
 					'https://registry.npmmirror.com/',
 				],
-			}])
+			},
+			{
+				type: 'input',
+				name: 'npmPkgName',
+				message: '请输入包名',
+				default: paths[paths.length - 1],
+			}
+		])
+		config.name = npmPkgName
 		config.publishConfig = {
 			access: 'public',
 			registry,
@@ -39,7 +53,8 @@ export default async function init() {
 
 	const vcsConfig: IInitAPIOptions['vcs'] = {}
 	const {
-		vcsType
+		vcsType,
+		vcsRepoName
 	} = await inquirer.prompt([
 		{
 			type: 'list',
@@ -49,9 +64,27 @@ export default async function init() {
 				'github',
 				'gitlab',
 			],
-		}
+		},
+		{
+			type: 'input',
+			name: 'vcsRepoName',
+			message: '请输入仓库名称',
+			default: isUnderMonorepo ? paths[paths.length - 3] : paths[paths.length - 1],
+		},
 	])
+	if (isUnderMonorepo) {
+		const { vceRepoDir } = await inquirer.prompt([
+			{
+				type: 'input',
+				name: 'vceRepoDir',
+				message: '请输入子包目录',
+				default: paths.slice(paths.length-2).join('/'),
+			},
+		])
+		vcsConfig.dir = vceRepoDir
+	}
 	vcsConfig.type = vcsType
+	vcsConfig.repoName = vcsRepoName
 
 	if (vcsType === 'github') {
 		const currentGitConfig = getCurrentGitConfig()
@@ -98,6 +131,7 @@ export default async function init() {
 				type: 'input',
 				name: 'binName',
 				message: '请输入 bin 名称',
+				default: process.cwd().split(path.sep)?.pop() || '',
 			},
 		])
 		config.bin = {
@@ -109,6 +143,6 @@ export default async function init() {
 		cwd: process.cwd(),
 		pkgJsonConfig: config,
 		vcs: vcsConfig,
-		pkgType
+		pkgType,
 	})
 }
